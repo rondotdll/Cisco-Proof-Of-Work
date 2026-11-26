@@ -1,0 +1,108 @@
+enable
+configure terminal
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Basic Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+hostname SW
+banner motd # UNAUTHORIZED ACCESS PROHIBITED #
+
+line console 0
+exec-timeout 5 0
+logging synchronous
+
+no ip domain lookup
+
+line vty 0 4
+exec-timeout 5 0
+logging synchronous
+transport input ssh
+
+enable secret cisco123
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! VLAN Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+vlan 10
+name Users
+
+vlan 20
+name Guest
+
+vlan 30
+name WLAN
+
+vlan 40
+name Management
+
+vlan 99
+name Native
+
+vlan 999
+name Alcatraz
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! SVI Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+interface vlan 10
+ip address 192.168.10.2 255.255.255.0
+no shutdown 
+
+interface vlan 20
+ip address 192.168.20.2 255.255.255.0
+no shutdown
+
+interface vlan 30
+ip address 192.168.30.2 255.255.255.0
+no shutdown
+
+interface vlan 40
+ip address 192.168.40.2 255.255.255.0
+no shutdown
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Port Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+switchport mode trunk
+switchport trunk native vlan 99
+switchport trunk allowed vlan 10,20,30,40
+no shutdown
+
+interface GigabitEthernet0/1
+description Gateway Link
+switchport mode trunk
+switchport trunk native vlan 99
+switchport trunk allowed vlan 10,20,30,40
+no shutdown
+
+interface GigabitEthernet0/2
+description WLC Link
+switchport mode trunk
+switchport trunk native vlan 40
+switchport trunk allowed vlan 10,20,30,40
+no shutdown
+
+interface FastEthernet0/1
+description AP Link
+switchport mode trunk
+switchport trunk native vlan 30
+switchport trunk allowed vlan 10,20,30,40
+no shutdown
+
+interface FastEthernet0/24
+description PC-A Link
+switchport mode access
+switchport access vlan 40
+spanning-tree portfast
+no shutdown
+
+! Secure unused ports
+interface range FastEthernet0/2-23
+switchport mode access
+switchport access vlan 999
+shutdown

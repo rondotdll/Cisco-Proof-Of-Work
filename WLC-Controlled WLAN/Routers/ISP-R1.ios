@@ -1,0 +1,61 @@
+enable
+configure terminal
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Basic Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+hostname ISP-R1
+banner motd # Silence the noise. Guard your thoughts. #
+
+line console 0
+exec-timeout 0 0
+logging synchronous
+login local
+
+line vty 0 4
+logging synchronous
+transport input ssh
+login local
+
+no ip domain lookup
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Local Account Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+username admin privilege 15 password WeAsOne
+aaa authentication login default local
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! SSH Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ip domain name vaiiya.net
+ip ssh version 2
+crypto key generate rsa general-keys modulus 4096
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Interface Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+interface Serial0/0/0
+clock rate 38400
+ip address 10.1.0.2 255.255.255.252
+no shutdown
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! OSPF Config
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+router ospf 10
+network 10.1.0.0 0.0.0.3 area 0
+network 1.0.0.0 0.255.255.255 area 0
+passive-interface GigabitEthernet0/0
+
+interface GigabitEthernet0/0
+ip address 1.255.255.254 255.0.0.0
+no shutdown

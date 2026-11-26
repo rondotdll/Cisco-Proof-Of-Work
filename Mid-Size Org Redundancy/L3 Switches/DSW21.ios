@@ -1,0 +1,151 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! DSW21 Config
+enable 
+configure terminal
+
+hostname DSW21
+ip routing
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! BASIC CONFIG
+!!!!!!!!!!!!!!!!
+line console 0
+logging synchronous
+exec-timeout 5 0
+login local
+no ip domain lookup
+
+username admin privilege 15 secret cisco123
+enable secret class456
+
+banner motd # Unauthorized Access is Strictly Prohibited! #
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! SSH CONFIG
+!!!!!!!!!!!!!!!!
+ip domain-name ihatepackettracer.com
+crypto key generate rsa general-keys modulus 2048
+
+line vty 0 4
+logging synchronous
+exec-timeout 5 0
+transport input ssh
+login local
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! VLAN CONFIG
+!!!!!!!!!!!!!!!!
+vlan 100
+name Warehouse
+
+vlan 111
+name Office
+
+vlan 101
+name WarehouseServer
+
+vlan 110
+name OfficeServer
+
+vlan 99
+name Native
+
+vlan 999
+name TaxTime
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! SPANNING-TREE CONFIG
+!!!!!!!!!!!!!!!!
+spanning-tree mode rapid-pvst
+spanning-tree vlan 101,110 priority 24576
+spanning-tree vlan 100,111 priority 20480
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! INTERFACE CONFIG
+!!!!!!!!!!!!!!!!
+interface FastEthernet0/22
+description Link to ASW00
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk native vlan 99
+switchport trunk allowed vlan 100,101,110,111
+no shutdown
+
+interface FastEthernet0/24
+description Link to ASW21
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk native vlan 99
+switchport trunk allowed vlan 100,101,110,111
+no shutdown
+
+interface FastEthernet0/23
+description Link to DSW00
+no switchport
+ip address 172.16.1.70 255.255.255.252
+no shutdown
+
+interface FastEthernet0/1
+description Link to R21
+no switchport
+ip address 172.16.1.62 255.255.255.252
+no shutdown
+
+interface FastEthernet0/2
+description Link to R00
+no switchport
+ip address 172.16.1.58 255.255.255.252
+no shutdown
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! HSRP CONFIG
+!!!!!!!!!!!!!!!!
+interface vlan 100
+ip address 192.168.100.2 255.255.255.0
+ip helper-address 172.16.1.13
+standby 100 ip 192.168.100.1
+standby 100 priority 110
+standby 100 preempt
+no shutdown
+
+interface vlan 111
+ip address 192.168.111.2 255.255.255.0
+ip helper-address 172.16.1.13
+standby 111 ip 192.168.111.1
+standby 111 priority 110
+standby 111 preempt
+no shutdown
+ 
+interface vlan 101
+ip address 192.168.101.3 255.255.255.0
+ip helper-address 172.16.1.13
+standby 101 ip 192.168.101.1
+standby 101 priority 100
+standby 101 preempt
+no shutdown
+
+interface vlan 110
+ip address 192.168.110.3 255.255.255.0
+ip helper-address 172.16.1.13
+standby 110 ip 192.168.110.1
+standby 110 priority 100
+standby 110 preempt
+no shutdown
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! OSPF CONFIG
+!!!!!!!!!!!!!!!!
+router ospf 67
+network 192.168.100.0 0.0.0.255 area 2
+network 192.168.101.0 0.0.0.255 area 2
+network 192.168.110.0 0.0.0.255 area 2
+network 192.168.111.0 0.0.0.255 area 2
+
+network 172.16.1.56 0.0.0.3 area 2
+network 172.16.1.60 0.0.0.3 area 2
+network 172.16.1.68 0.0.0.3 area 2
+
+passive-interface vlan 100
+passive-interface vlan 111
+passive-interface vlan 101
+passive-interface vlan 110

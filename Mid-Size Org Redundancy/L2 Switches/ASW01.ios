@@ -1,0 +1,97 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ASW00 Config
+enable
+configure terminal
+
+hostname ASW01
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! BASIC CONFIG
+!!!!!!!!!!!!!!!!
+line console 0
+logging synchronous
+exec-timeout 5 0
+login local
+no ip domain lookup
+
+username admin secret cisco123 
+enable secret class456
+
+banner motd # Unauthorized Access is Strictly Prohibited! #
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! VLAN CONFIG
+!!!!!!!!!!!!!!!!
+vlan 10
+name Reception
+
+vlan 20
+name Sales
+
+vlan 30
+name Accounting
+
+vlan 40
+name IT
+
+vlan 99
+name Native
+
+vlan 999
+name TaxTime
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! SPANNING-TREE CONFIG
+!!!!!!!!!!!!!!!!
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20 priority 32768
+spanning-tree vlan 30,40 priority 28672
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! INTERFACE CONFIG
+!!!!!!!!!!!!!!!!
+interface FastEthernet0/1
+description Link to PC30
+switchport mode access
+switchport access vlan 30
+spanning-tree portfast
+spanning-tree bpduguard enable
+no shutdown
+
+interface FastEthernet0/2
+description Link to AP30
+switchport mode access
+switchport access vlan 30
+spanning-tree portfast
+spanning-tree bpduguard enable
+no shutdown
+
+interface FastEthernet0/13
+description Link to AP40
+switchport mode access
+switchport access vlan 40
+spanning-tree portfast
+spanning-tree bpduguard enable
+no shutdown
+
+interface range FastEthernet0/22-24
+description Trunk Link
+switchport mode trunk
+switchport trunk native vlan 99
+switchport trunk allowed vlan 10,20,30,40
+no shutdown
+
+interface range FastEthernet0/3-12,FastEthernet0/14-21
+switchport mode access
+switchport access vlan 999
+spanning-tree portfast
+spanning-tree bpduguard enable
+
+! schizo security configuration:
+switchport protected
+switchport port-security
+switchport port-security mac-address 0.0.0
+switchport port-security maximum 1
+switchport port-security violation shutdown
+shutdown
